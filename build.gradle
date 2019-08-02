@@ -1,0 +1,43 @@
+group 'CoreEngine'
+version '1.2-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+
+task buildEngine(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'CoreEngin SoftWare',
+                'Implementation-Version': version,
+                'Main-Class': 'net.neferett.coreengine.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+test {
+    reports.junitXml.destination = file("$buildDir/xml")
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.json', name: 'json', version: '20180813'
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
+    compile name: 'RedisAPI-all-1.0-SNAPSHOT'
+    compileOnly 'org.projectlombok:lombok:1.18.4'
+    annotationProcessor 'org.projectlombok:lombok:1.18.4'
+}
