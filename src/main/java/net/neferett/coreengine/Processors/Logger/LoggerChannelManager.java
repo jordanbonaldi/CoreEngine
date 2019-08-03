@@ -2,7 +2,6 @@ package net.neferett.coreengine.Processors.Logger;
 
 import lombok.Data;
 import lombok.experimental.Delegate;
-
 import java.util.HashMap;
 
 @Data

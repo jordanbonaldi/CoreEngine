@@ -139,7 +139,7 @@ public class CoreEngine {
             this.initHttpServerAPI();
         }
 
-        {   // Handling Processings
+        {   // Handling Processing
             this.createProcessors();
             if (this.isInteractive()) {
                 this.loadCommandsManager();

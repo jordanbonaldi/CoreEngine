@@ -29,7 +29,7 @@ public class Interpreter {
         if (args.length == 2)
             return new String[]{args[1]};
 
-        return Arrays.copyOfRange(args, 1, args.length - 1);
+        return Arrays.copyOfRange(args, 1, args.length);
     }
 
     @SneakyThrows
@@ -46,12 +46,17 @@ public class Interpreter {
 
         Command cmd = manager.getCommand();
 
-        if (cmd.argsLength() > 0 && cmd.argsLength() != commandArgs.length) {
-            Logger.log("Command " + cmd.name() + " mismatch args length of " + cmd.argsLength());
+        if ((cmd.minLength() == 0 && cmd.argsLength() != commandArgs.length) ||
+            (cmd.minLength() > 0 && commandArgs.length < cmd.minLength())
+        ){
+            Logger.log("Command " + cmd.name() + " mismatch args length");
+            Logger.log(cmd.help());
             return;
         }
 
-        manager.onCommand(commandArgs);
+        if (cmd.activated())
+            if (!manager.onCommand(commandArgs))
+                Logger.log("Error while performing command");
     }
 
 }

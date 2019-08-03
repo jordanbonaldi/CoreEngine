@@ -1,13 +1,11 @@
 package net.neferett.coreengine.Processors.Logger;
 
-import com.sun.istack.internal.Nullable;
 import lombok.NonNull;
 import net.neferett.coreengine.CoreEngine;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.stream.Collectors;
 
 public class Logger {
 
@@ -39,7 +37,7 @@ public class Logger {
         }
 
         if (channel.equalsIgnoreCase(CoreEngine.getInstance().getLoggerChannelManager().getActual())) {
-            new ArrayList<>(chan.getMessages().keySet()).forEach(Logger::log);
+            chan.getMessages().forEach((message, read) -> { if(!read) log(message); });
             log(msg);
         } else
             chan.put(msg, false);
