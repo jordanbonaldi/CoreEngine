@@ -11,6 +11,7 @@ import net.neferett.coreengine.Processors.Plugins.Commands.CommandsManager;
 import net.neferett.coreengine.Processors.Plugins.CorePlugin;
 import net.neferett.coreengine.Processors.Plugins.Handlers.PluginProcessors;
 import net.neferett.coreengine.Processors.Plugins.PluginThreadExecutor;
+import net.neferett.coreengine.Processors.Threads.LaunchRunnable;
 import net.neferett.httpserver.api.HTTPServerAPI;
 
 import java.util.Date;
@@ -125,6 +126,13 @@ public class CoreEngine {
         this.loggerChannelManager.put(channel.getChannelName(), channel);
     }
 
+    public void actionAfterAllPluginLoaded() {
+        LaunchRunnable runnable = new LaunchRunnable();
+
+        runnable.setAction(() -> this.httpServerAPI.start());
+        new Thread(runnable).start();
+    }
+
     @Getter
     @Setter
     private static CoreEngine instance;
@@ -132,6 +140,8 @@ public class CoreEngine {
     void build() {
 
         this.launch = new Date();
+
+        this.actionAfterAllPluginLoaded();
 
         System.out.println(this.launch);
 
@@ -158,8 +168,6 @@ public class CoreEngine {
             this.pluginExecutor = new PluginThreadExecutor(this.processors);
 
             this.pluginThreadExecutor = new Thread(this.pluginExecutor);
-
-            this.httpServerAPI.start();
 
             this.pluginThreadExecutor.start();
         }

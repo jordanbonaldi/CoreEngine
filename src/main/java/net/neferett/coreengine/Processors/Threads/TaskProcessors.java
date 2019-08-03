@@ -63,6 +63,10 @@ public class TaskProcessors {
         }});
     }
 
+    public int getPluginActivated() {
+        return (int) this.getTaskProcessesList().stream().map(e -> e.getTaskProcess().getPlugin().isActivated()).filter(e-> e).count();
+    }
+
     public void shutDown() {
         this.executorService.shutdown();
     }

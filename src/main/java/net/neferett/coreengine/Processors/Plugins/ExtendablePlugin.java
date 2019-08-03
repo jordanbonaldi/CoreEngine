@@ -3,6 +3,7 @@ package net.neferett.coreengine.Processors.Plugins;
 import lombok.Data;
 import net.neferett.coreengine.CoreEngine;
 import net.neferett.coreengine.Processors.Plugins.Commands.ExtendableCommand;
+import net.neferett.httpserver.api.Routing.RoutingProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,8 @@ public abstract class ExtendablePlugin implements CorePlugin{
         this.commands.add(this.getEngine().getCommandsManager().createCommand(this.name, clazz));
     }
 
-    protected void addRoute(String path, String ...names) {
-        this.getEngine().getHttpServerAPI().addAllRoutesInPath(path, names);
+    protected void addRoute(Class<? extends RoutingProperties> clazz) {
+        this.getEngine().getHttpServerAPI().addRoute(clazz);
     }
 
     protected String getConfigPath() {
