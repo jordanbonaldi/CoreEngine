@@ -18,6 +18,14 @@ public class CoreConfig implements Config {
 
     private List<String> routes;
 
+    private boolean redis;
+
+    private String redisIp;
+
+    private String redisPassword;
+
+    private int redisPort;
+
     @SneakyThrows
     public String getPluginsPath(String path) {
         String[] array = path.split("/");

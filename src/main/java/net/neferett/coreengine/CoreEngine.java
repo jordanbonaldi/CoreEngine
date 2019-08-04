@@ -5,14 +5,17 @@ import net.neferett.coreengine.Console.Interpreter;
 import net.neferett.coreengine.Console.ThreadedInterpreter;
 import net.neferett.coreengine.Processors.Config.CoreConfig;
 import net.neferett.coreengine.Processors.Config.PreConfig;
+import net.neferett.coreengine.Processors.Logger.Logger;
 import net.neferett.coreengine.Processors.Logger.LoggerChannel;
 import net.neferett.coreengine.Processors.Logger.LoggerChannelManager;
 import net.neferett.coreengine.Processors.Plugins.Commands.CommandsManager;
 import net.neferett.coreengine.Processors.Plugins.CorePlugin;
+import net.neferett.coreengine.Processors.Plugins.ExtendablePlugin;
 import net.neferett.coreengine.Processors.Plugins.Handlers.PluginProcessors;
 import net.neferett.coreengine.Processors.Plugins.PluginThreadExecutor;
 import net.neferett.coreengine.Processors.Threads.LaunchRunnable;
 import net.neferett.httpserver.api.HTTPServerAPI;
+import net.neferett.redisapi.RedisAPI;
 
 import java.util.Date;
 
@@ -45,12 +48,15 @@ public class CoreEngine {
 
     private Date launch;
 
+    private RedisAPI redisAPI;
+
     @NonNull
     private String configPath;
 
     public CoreEngine(String configPath, boolean interactive) {
         this.configPath = configPath;
         this.interactive = interactive;
+        this.redisAPI = null;
         this.beforeUsedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         instance = this;
 
@@ -59,6 +65,7 @@ public class CoreEngine {
         this.getLoggerChannelManager().setActual("Core");
 
         this.loadConfig();
+        this.loadRedis();
     }
 
     public long calculateMemory() {
@@ -86,6 +93,14 @@ public class CoreEngine {
         this.loadRoutes();
     }
 
+    private void loadRedis() {
+        Logger.log("Database activated: " + this.config.isRedis());
+        if (this.config.isRedis()) {
+            Logger.log("Loading redis with " + this.config.getRedisIp() + ":" + this.config.getRedisPort());
+            this.redisAPI = new RedisAPI(this.config.getRedisIp(), this.config.getRedisPassword(), this.config.getRedisPort());
+        }
+    }
+
     @SneakyThrows
     public void createProcessors() {
         this.processors = new PluginProcessors(this.config.getPluginsPath(this.preConfig.getPath()));
@@ -94,8 +109,14 @@ public class CoreEngine {
         this.processors.loadTaskedPlugins();
     }
 
-    public CorePlugin getPlugin(Class<?> clazz) {
-        return this.processors.getPlugins().stream().filter(e -> e.getClass().equals(clazz)).findFirst().orElse(null);
+    public ExtendablePlugin getPlugin(Class<?> clazz) {
+        System.out.println("toto");
+        ExtendablePlugin pl = this.processors.getPlugins().stream().filter(e ->
+                e.getClass().getSimpleName().equalsIgnoreCase(clazz.getSimpleName())
+        ).findFirst().orElse(null);
+
+        System.out.println(pl);
+        return pl;
     }
 
     private void loadCommandsManager() {
@@ -138,7 +159,6 @@ public class CoreEngine {
     private static CoreEngine instance;
 
     void build() {
-
         this.launch = new Date();
 
         this.actionAfterAllPluginLoaded();
