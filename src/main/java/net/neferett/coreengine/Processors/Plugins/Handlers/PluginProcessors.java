@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Data
 public class PluginProcessors {
@@ -19,6 +20,8 @@ public class PluginProcessors {
     private final String pluginPath;
 
     private List<ExtendablePlugin> plugins = new ArrayList<>();
+
+    private List<Object> objects = new ArrayList<>();
 
     private File folder;
 
@@ -28,14 +31,15 @@ public class PluginProcessors {
         this.folder = new File(this.pluginPath);
     }
 
-    private ExtendablePlugin addPlugins(File file) {
-        ExtendablePlugin pl = new PluginConstructor(file).build().getPlugin();
+    private void addPlugins(List<File> files) {
+        PluginConstructor constructor = new PluginConstructor(files).build();
 
-        Logger.log("Plugin " + file.getName() + " found");
+        //ExtendablePlugin pl = constructor.getPlugin();
 
-        this.plugins.add(pl);
+        //Logger.log("Plugin " + file.getName() + " found");
 
-        return pl;
+        this.plugins = new ArrayList<>(constructor.getPlugins().values());
+
     }
 
     private void initiateProcessors() {
@@ -59,7 +63,7 @@ public class PluginProcessors {
             return;
         }
 
-        Arrays.stream(Objects.requireNonNull(this.folder.listFiles())).filter(e -> e.getName().contains(".jar")).forEach(this::addPlugins);
+        this.addPlugins(Arrays.stream(Objects.requireNonNull(this.folder.listFiles())).filter(e -> e.getName().contains(".jar")).collect(Collectors.toList()));
     }
 
     public ExtendablePlugin enablePlugin(String name) {
@@ -68,7 +72,11 @@ public class PluginProcessors {
         if (null == file)
             return null;
 
-        return this.addPlugins(file);
+        this.addPlugins(new ArrayList<File>() {{
+            add(file);
+        }});
+
+        return this.plugins.stream().filter(e -> e.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 
     public void reloadAll() {

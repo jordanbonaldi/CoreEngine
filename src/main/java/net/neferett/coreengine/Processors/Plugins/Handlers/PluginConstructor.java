@@ -2,6 +2,7 @@ package net.neferett.coreengine.Processors.Plugins.Handlers;
 
 import lombok.Data;
 import lombok.SneakyThrows;
+import net.neferett.coreengine.CoreEngine;
 import net.neferett.coreengine.Processors.Config.PluginConfig;
 import net.neferett.coreengine.Processors.Plugins.ExtendablePlugin;
 import net.neferett.coreengine.Processors.Plugins.Plugin;
@@ -9,17 +10,20 @@ import net.neferett.coreengine.Processors.Logger.Logger;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 @Data
 class PluginConstructor {
 
-    private final File file;
+    private final List<File> files;
 
-    private ExtendablePlugin plugin;
+    private HashMap<String, ExtendablePlugin> plugins = new HashMap<>();
 
     private Class<?> clazz;
 
@@ -30,12 +34,25 @@ class PluginConstructor {
     private PluginConfig pluginConfig;
 
     @SneakyThrows
-    private void buildLoader() {
-        this.loader = URLClassLoader.newInstance(new URL[]{ this.file.toURI().toURL() }, this.getClass().getClassLoader());
+    private URL[] getUrlFromList() {
+        return this.files.stream().map(e -> {
+            URL url = null;
+            try {
+                url =  e.toURI().toURL();
+            } catch (MalformedURLException e1) {
+                e1.printStackTrace();
+            }
+            return url;
+        }).toArray(URL[]::new);
     }
 
-    private String getPluginPath() {
-        String[] path = this.file.getAbsolutePath().split("/");
+    @SneakyThrows
+    private void buildLoader() {
+        this.loader = URLClassLoader.newInstance(getUrlFromList(), CoreEngine.class.getClassLoader());
+    }
+
+    private String getPluginPath(File file) {
+        String[] path = file.getAbsolutePath().split("/");
 
         path[path.length - 1] = null;
 
@@ -46,39 +63,51 @@ class PluginConstructor {
         return builder.toString().substring(1) + "/";
     }
 
-    private void extractPluginAnnotation() {
+    private void extractPluginAnnotation(ExtendablePlugin plugin, File file) {
         Plugin pl = this.clazz.getAnnotation(Plugin.class);
 
-        this.plugin.setName(pl.name());
-        this.plugin.setConfigPath(pl.configPath());
-        this.plugin.setActivated(pl.activated());
-        this.plugin.setPluginPath(this.getPluginPath());
-        this.plugin.setFileName(this.getFile().getName());
+        plugin.setName(pl.name());
+        plugin.setConfigPath(pl.configPath());
+        plugin.setActivated(pl.activated());
+        plugin.setPluginPath(this.getPluginPath(file));
+        plugin.setFileName(file.getName());
     }
 
     @SneakyThrows
-    private void instantiationPlugin() {
+    private void instantiationPlugin(File file) {
+
         this.constructor = this.clazz.getConstructors()[0];
 
-        this.plugin = (ExtendablePlugin) this.constructor.newInstance();
+        ExtendablePlugin pl = (ExtendablePlugin) this.constructor.newInstance();
 
-        this.extractPluginAnnotation();
+        this.plugins.put(file.getName(), pl);
+
+        this.extractPluginAnnotation(pl, file);
     }
 
     @SneakyThrows
-    private void buildPlugin() {
-        this.pluginConfig = new ManifestReader(this.loader).build().getConfig();
+    private void buildPlugin(File file) {
+        this.pluginConfig = new ManifestReader(new URLClassLoader(new URL[]{file.toURI().toURL()})).build().getConfig();
 
         this.clazz = Class.forName(this.pluginConfig.getMain(), true, this.loader);
     }
 
     PluginConstructor build() {
 
-        Logger.log("Loading plugin " + this.file.getName());
-
         this.buildLoader();
-        this.buildPlugin();
-        this.instantiationPlugin();
+
+        this.files.forEach(e -> {
+            Logger.log("Loading plugin " + e.getName());
+
+            {
+                this.buildPlugin(e);
+                this.instantiationPlugin(e);
+            }
+
+        });
+
+
+
 
         return this;
     }

@@ -2,6 +2,7 @@ package net.neferett.coreengine.Processors.Plugins;
 
 import lombok.Data;
 import net.neferett.coreengine.CoreEngine;
+import net.neferett.coreengine.Processors.Config.PluginConfig;
 import net.neferett.coreengine.Processors.Plugins.Commands.ExtendableCommand;
 import net.neferett.httpserver.api.Routing.RoutingProperties;
 
@@ -18,6 +19,8 @@ public abstract class ExtendablePlugin implements CorePlugin{
     private boolean activated;
 
     private String pluginPath;
+
+    private PluginConfig config;
 
     private String fileName;
 

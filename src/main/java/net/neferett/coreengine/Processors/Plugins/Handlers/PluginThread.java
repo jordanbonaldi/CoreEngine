@@ -7,7 +7,7 @@ import net.neferett.coreengine.Processors.Threads.TaskProcess;
 import net.neferett.coreengine.Processors.Logger.Logger;
 
 @Data
-public class PluginThread implements TaskProcess{
+public class PluginThread implements TaskProcess {
 
     private final ExtendablePlugin plugin;
 

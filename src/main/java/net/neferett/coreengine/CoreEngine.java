@@ -9,7 +9,6 @@ import net.neferett.coreengine.Processors.Logger.Logger;
 import net.neferett.coreengine.Processors.Logger.LoggerChannel;
 import net.neferett.coreengine.Processors.Logger.LoggerChannelManager;
 import net.neferett.coreengine.Processors.Plugins.Commands.CommandsManager;
-import net.neferett.coreengine.Processors.Plugins.CorePlugin;
 import net.neferett.coreengine.Processors.Plugins.ExtendablePlugin;
 import net.neferett.coreengine.Processors.Plugins.Handlers.PluginProcessors;
 import net.neferett.coreengine.Processors.Plugins.PluginThreadExecutor;
@@ -110,13 +109,9 @@ public class CoreEngine {
     }
 
     public ExtendablePlugin getPlugin(Class<?> clazz) {
-        System.out.println("toto");
-        ExtendablePlugin pl = this.processors.getPlugins().stream().filter(e ->
-                e.getClass().getSimpleName().equalsIgnoreCase(clazz.getSimpleName())
+        return this.processors.getPlugins().stream().filter(e ->
+            e.getClass().getSimpleName().equalsIgnoreCase(clazz.getSimpleName())
         ).findFirst().orElse(null);
-
-        System.out.println(pl);
-        return pl;
     }
 
     private void loadCommandsManager() {
@@ -162,8 +157,6 @@ public class CoreEngine {
         this.launch = new Date();
 
         this.actionAfterAllPluginLoaded();
-
-        System.out.println(this.launch);
 
         { // HTTPServer
             this.initHttpServerAPI();
