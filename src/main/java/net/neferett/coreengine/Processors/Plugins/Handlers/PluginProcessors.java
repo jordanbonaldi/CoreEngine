@@ -34,10 +34,6 @@ public class PluginProcessors {
     private void addPlugins(List<File> files) {
         PluginConstructor constructor = new PluginConstructor(files).build();
 
-        //ExtendablePlugin pl = constructor.getPlugin();
-
-        //Logger.log("Plugin " + file.getName() + " found");
-
         this.plugins = new ArrayList<>(constructor.getPlugins().values());
 
     }
@@ -112,3 +108,4 @@ public class PluginProcessors {
     }
 
 }
+
